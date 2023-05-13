@@ -21,6 +21,7 @@ async function sendMessage(content: string, context: ChatCompletionRequestMessag
   } catch (error) {
     console.error(error);
   } finally {
+    console.log("finally response", response);
     if (!response) return undefined;
     const { message } = await response.json();
     return message as ChatCompletionRequestMessage;
@@ -66,48 +67,51 @@ export default function Content() {
     }
   }, []);
 
-  const onSubmit = useCallback<FormEventHandler<HTMLFormElement>>(async (event) => {
-    setWorking(true);
-    event.preventDefault();
+  const onSubmit = useCallback<FormEventHandler<HTMLFormElement>>(
+    async (event) => {
+      setWorking(true);
+      event.preventDefault();
 
-    const data = new FormData(event.currentTarget);
-    const message = data.get("message");
-    if (!message || typeof message !== "string") {
-      // TODO: proper error handling
-      return;
-    }
-
-    if (message === "restart" || message === "reset") {
-      // @ts-ignore we have access to named inputs in the form
-      event.target.elements.message.value = "";
-      setChatLog([]);
-      setGameTokens({ clues: 0, pass: 0, complete: false });
-      setStarted(false);
-      setWorking(false);
-      return;
-    }
-
-    const response = await sendMessage(
-      message,
-      chatLog.filter((message) => message.role !== "system")
-    );
-    if (response) {
-      // @ts-ignore we have access to named inputs in the form
-      event.target.elements.message.value = "";
-
-      if (response) {
-        setChatLog((log) => log.concat({ role: "user", content: message }, response));
-        setGameTokens((gameTokens) => ({
-          ...gameTokens,
-          ...extractTokens(response.content),
-        }));
+      const data = new FormData(event.currentTarget);
+      const message = data.get("message");
+      if (!message || typeof message !== "string") {
+        // TODO: proper error handling
+        return;
       }
-      requestAnimationFrame(() => {
-        chatLogRef.current?.scrollTo({ top: chatLogRef.current.scrollHeight, behavior: "smooth" });
-      });
-    }
-    setWorking(false);
-  }, []);
+
+      if (message === "restart" || message === "reset") {
+        // @ts-ignore we have access to named inputs in the form
+        event.target.elements.message.value = "";
+        setChatLog([]);
+        setGameTokens({ clues: 0, pass: 0, complete: false });
+        setStarted(false);
+        setWorking(false);
+        return;
+      }
+
+      const response = await sendMessage(
+        message,
+        chatLog.filter((message) => message.role !== "system")
+      );
+      if (response) {
+        // @ts-ignore we have access to named inputs in the form
+        event.target.elements.message.value = "";
+
+        if (response) {
+          setChatLog((log) => log.concat({ role: "user", content: message }, response));
+          setGameTokens((gameTokens) => ({
+            ...gameTokens,
+            ...extractTokens(response.content),
+          }));
+        }
+        requestAnimationFrame(() => {
+          chatLogRef.current?.scrollTo({ top: chatLogRef.current.scrollHeight, behavior: "smooth" });
+        });
+      }
+      setWorking(false);
+    },
+    [chatLog]
+  );
 
   console.log({ chatLog, gameTokens });
 
