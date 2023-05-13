@@ -7,24 +7,39 @@ import { useLocalStorage } from "usehooks-ts";
 
 type Tokens = { clues: number; pass: number; complete: boolean };
 
-async function sendMessage(message: string, context: ChatCompletionRequestMessage[]) {
-  const response = await window.fetch("/api/ai", {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ message, context }),
-  });
-
-  if (!response.ok) console.error(await response.json());
-  else {
-    const { message, tokens } = await response.json();
-    return { message, tokens } as {
-      message: ChatCompletionRequestMessage;
-      tokens: Tokens;
-    };
+async function sendMessage(content: string, context: ChatCompletionRequestMessage[]) {
+  let response;
+  try {
+    response = await window.fetch("/api/ai", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ message: content, context }),
+    });
+  } catch (error) {
+    console.error(error);
+  } finally {
+    if (!response) return undefined;
+    const { message } = await response.json();
+    return message as ChatCompletionRequestMessage;
   }
+}
+
+export function extractTokens(message: string) {
+  const tokens: Partial<Tokens> = {};
+
+  const clues = message.match(/CLUES:(\d)/);
+  if (clues) tokens.clues = parseInt(clues[1]);
+
+  const passengers = message.match(/PASS:(\d)/);
+  if (passengers) tokens.pass = parseInt(passengers[1]);
+
+  const complete = message.match(/COMPLETE/);
+  if (complete) tokens.complete = true;
+
+  return tokens;
 }
 
 export default function Content() {
@@ -37,13 +52,15 @@ export default function Content() {
   const [started, setStarted] = useState(chatLog.length > 0);
   const [working, setWorking] = useState(false);
 
-  const chatLogRef = useRef<HTMLUListElement>(null)
+  const chatLogRef = useRef<HTMLUListElement>(null);
 
   const onClickBegin = useCallback(async () => {
     setWorking(true);
     const response = await sendMessage("", []);
     if (response) {
-      setChatLog((chatLog) => chatLog.concat(response.message));
+      const tokens = extractTokens(response.content);
+      setGameTokens((gameTokens) => ({ ...gameTokens, ...tokens }));
+      setChatLog((chatLog) => chatLog.concat(response));
       setStarted(true);
       setWorking(false);
     }
@@ -60,21 +77,34 @@ export default function Content() {
       return;
     }
 
-    const response = await sendMessage(message, chatLog);
+    if (message === "restart" || message === "reset") {
+      // @ts-ignore we have access to named inputs in the form
+      event.target.elements.message.value = "";
+      setChatLog([]);
+      setGameTokens({ clues: 0, pass: 0, complete: false });
+      setStarted(false);
+      setWorking(false);
+      return;
+    }
+
+    const response = await sendMessage(
+      message,
+      chatLog.filter((message) => message.role !== "system")
+    );
     if (response) {
       // @ts-ignore we have access to named inputs in the form
       event.target.elements.message.value = "";
 
-      setChatLog((log) => log.concat({ role: "user", content: message }, response.message));
-      if (response.tokens) {
+      if (response) {
+        setChatLog((log) => log.concat({ role: "user", content: message }, response));
         setGameTokens((gameTokens) => ({
           ...gameTokens,
-          ...response.tokens,
+          ...extractTokens(response.content),
         }));
       }
-      setTimeout(() => {
-        chatLogRef.current?.scrollTo({ top: chatLogRef.current.scrollTop })
-      }, 100)
+      requestAnimationFrame(() => {
+        chatLogRef.current?.scrollTo({ top: chatLogRef.current.scrollHeight, behavior: "smooth" });
+      });
     }
     setWorking(false);
   }, []);
