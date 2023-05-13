@@ -1,7 +1,6 @@
-'use server';
-import { ChatCompletionRequestMessage, Configuration, OpenAIApi } from 'openai'
+import { ChatCompletionRequestMessage, Configuration, OpenAIApi } from "openai";
 
-const configuration = new Configuration({ apiKey: process.env.OPENAI_API_KEY })
+const configuration = new Configuration({ apiKey: process.env.OPENAI_API_KEY });
 const openai = new OpenAIApi(configuration);
 
 const PROMPT = `You are Detective Theodore Tootwell, an experienced investigator renowned for your sharp deductive skills. 
@@ -29,32 +28,27 @@ If the player is correct, conclude the story and include the token {COMPLETE} in
 The mystery should be resolved in no more than 12 journal entries. Ensure that the evidence gathered concretely points to a specific suspect by the time there are 8 journal entries in total.
 Make sure your conclusion of the story is not open-ended. The last message with {COMPLETE} should conclusively state that the murderer has been found.`;
 
-
 export async function submitMessage(message: string, context: ChatCompletionRequestMessage[]) {
-    const response = await openai.createChatCompletion({
-        model: 'gpt-3.5-turbo',
-        messages: [
-            { role: 'system', content: PROMPT },
-            ...context,
-            { role: 'user', content: message }
-        ]
-    })
+  const response = await openai.createChatCompletion({
+    model: "gpt-3.5-turbo",
+    messages: [{ role: "system", content: PROMPT }, ...context, { role: "user", content: message }],
+  });
 
-    return response.data?.choices[0].message
+  return response.data?.choices[0].message;
 }
 
-type Tokens = { clues?: number; pass?: number; complete?: boolean }
+type Tokens = { clues?: number; pass?: number; complete?: boolean };
 export function extractTokens(message: string) {
-    const tokens: Tokens = {};
+  const tokens: Tokens = {};
 
-    const clues = message.match(/CLUES:(\d)/);
-    if (clues) tokens.clues = parseInt(clues[1]);
+  const clues = message.match(/CLUES:(\d)/);
+  if (clues) tokens.clues = parseInt(clues[1]);
 
-    const passengers = message.match(/PASS:(\d)/);
-    if (passengers) tokens.pass = parseInt(passengers[1]);
+  const passengers = message.match(/PASS:(\d)/);
+  if (passengers) tokens.pass = parseInt(passengers[1]);
 
-    const complete = message.match(/COMPLETE/);
-    if (complete) tokens.complete = true;
+  const complete = message.match(/COMPLETE/);
+  if (complete) tokens.complete = true;
 
-    return { message: message.replaceAll(/{.*?}/g, '').trim(), tokens }
+  return { message: message.replaceAll(/{.*?}/g, "").trim(), tokens };
 }
