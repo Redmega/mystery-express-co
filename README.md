@@ -1,34 +1,37 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+## Inspiration
 
-## Getting Started
+We're both big fans of video games and we wanted to create an interactive experience online using AI to power the responses to the user's input. We considered a few different AI storytelling ideas but we ended up choosing a murder mystery train by actually discussing and planning prompt ideas with ChatGPT itself!
 
-First, run the development server:
+## What it does
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-```
+Using OpenAI's API, the player is guided through a murder mystery in the form on journal entries from the AI detective. The player helps the AI detective figure out what clues to investigate, and once enough evidence has been collected the perpetrator and their motives are revealed!
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## How we built it
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The core framework used is Next.js, which powers the front-end and the backend functions which relay user input to the OpenAI API's ChatGPT-3.5 model.
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+The AI model is given the context of a prompt written to provide initial information about the game and the AI's role, and to instruct it how to respond to user input.
 
-## Learn More
+Assets were drawn and animated using Aseprite. Audio came from royalty free sites like Pixabay.
 
-To learn more about Next.js, take a look at the following resources:
+## Challenges we ran into
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. **Crafting a good prompt is _hard_**: This part of the project took the most time and even with hours of thinking and testing (repeatedly running into ChatGPT's hourly message limit) and all the iterations we went through, there's still imperfections with how the language model interprets our prompt, or how it chooses to respond to certain player input.
+2. **The OpenAI API can take a while to respond**: On average each response takes ~10 seconds. This can be solved in part by enabling streaming of the response, but due to the hackathon time constraints we thought it would be more important to let it be slightly slow and still be able to finish the project than to attempt streaming of the response and leave it incomplete.
+3. **OpenAI Rate Limiting is confusing**: Sending one message every ~10 seconds max should not be triggering a rate limit when it allows 3,500 requests and 90,000 tokens per minute, but we frequently ran into the rate limiting error when testing. Our prompt has ~300 tokens according to ChatGPT itself, so we definitely should not be bumping against those restraints.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+## Accomplishments that we're proud of
 
-## Deploy on Vercel
+1. **Cohesive art design**: All of the art was made by Gabi (@Senjerak), and he managed to come up with an aesthetic that was both pleasing to the eye, easy to iterate on, and fit with the theme of the game.
+2. **Integrating known and unknown technologies**: Angel (@Redmega) was familiar with Next.js and React already, but he has never used ChatGPT or the OpenAI API before, so it was cool to see how he was able to mesh existing knowledge with brand new explorations!
+3. **Hackathon Newbie delivered a complete project**: Gabi (@Senjerak) has never participated in a hackathon before, so he got to see what it was like. Working to hack a project together to fit a specific theme within a given deadline can be hard, but it's so satisfying to have a (mostly) completed project to show off at the end of it!
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## What we learned
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+**OpenAI API**: Neither of us have worked with the OpenAI API before (And one of us have never used an API before at all!), so implementing that was challenging and fun! Instead of just interacting with ChatGPT via their website, we made our own server talk to it with our own UI.
+
+## What's next for Mystery Express, Co.
+
+- We would like to implement text streaming from the OpenAI API so that responses seem faster and more fluid.
+- Making it mobile friendly would be great for usability and reach! We chose not to focus on making the page work on mobile screens so we could lay out the scenes how we wanted them.
+- Also, it would be cool if the art scenes were dynamic and truly reflected what the AI storyteller was writing in his journal.
