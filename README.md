@@ -1,3 +1,9 @@
+# Mystery Express, Co.
+
+Watch the Demo here!
+
+[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/j-xPbNTli5M/0.jpg)](https://www.youtube.com/watch?v=j-xPbNTli5M)
+
 ## Inspiration
 
 We're both big fans of video games and we wanted to create an interactive experience online using AI to power the responses to the user's input. We considered a few different AI storytelling ideas but we ended up choosing a murder mystery train by actually discussing and planning prompt ideas with ChatGPT itself!
