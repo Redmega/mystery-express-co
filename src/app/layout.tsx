@@ -11,6 +11,9 @@ export const metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="icon" type="image/x-icon" href="/express-toot-zoom.png" />
+      </head>
       <body className={font.className}>{children}</body>
     </html>
   );

@@ -1,3 +1,5 @@
+/* eslint @next/next/no-img-element: 0 */
+/* eslint jsx-a11y/alt-text: 0 */
 "use client";
 
 import clsx from "clsx";
@@ -19,7 +21,7 @@ export default function Scene({
   if (complete)
     return (
       <>
-        <Investigator className="absolute mr-80 -scale-x-100 z-20" thinking={working} />
+        <Investigator className="absolute mr-80 -scale-x-100 z-20" thinking={working} win />
         <img className="absolute z-[15] mt-24" src="/express-chairs.png" />
         <img className="absolute z-20 mr-24 mb-56" src="/express-case-closed.gif" />
         <img className="absolute z-20 scale-[.25] ml-32 mb-56" src="/express-confetti.gif" />
@@ -80,10 +82,12 @@ function Investigator({
   className,
   thinking,
   thinkDir = "left",
+  win,
 }: {
   className: string;
   thinking?: boolean;
   thinkDir?: "left" | "right";
+  win?: boolean;
 }) {
   return (
     <div className={className}>
@@ -95,7 +99,7 @@ function Investigator({
         )}
         src={thinkDir === "left" ? "/express-load.gif" : "/express-load-r.gif"}
       />
-      <img src="/express-toot.gif" />
+      <img src={win ? "/express-toot-win.gif" : "/express-toot.gif"} />
     </div>
   );
 }
